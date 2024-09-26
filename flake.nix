@@ -5,6 +5,7 @@
   description = "Sonata System";
   inputs = {
     lowrisc-nix.url = "github:lowRISC/lowrisc-nix";
+    lowrisc-it.url = "git+ssh://git@github.com/lowrisc/lowrisc-it";
 
     nixpkgs.follows = "lowrisc-nix/nixpkgs";
     flake-utils.follows = "lowrisc-nix/flake-utils";
@@ -21,6 +22,7 @@
     nixpkgs,
     flake-utils,
     lowrisc-nix,
+    lowrisc-it,
     ...
   } @ inputs: let
     system_outputs = system: let
@@ -32,6 +34,7 @@
 
       lrDoc = lowrisc-nix.lib.doc {inherit pkgs;};
       lrPkgs = lowrisc-nix.outputs.packages.${system};
+      lrItPkgs = lowrisc-it.outputs.packages.${system};
       inherit (pkgs.lib) fileset getExe;
 
       pythonEnv = let
@@ -166,6 +169,8 @@
           sonataSimulatorFileset
           ;
       };
+
+      bitstream = import nix/bitstream.nix {inherit pkgs lrItPkgs pythonEnv;};
     in {
       formatter = pkgs.alejandra;
       devShells.default = pkgs.mkShell {
@@ -196,6 +201,8 @@
           cheriot-rtos-test-suite
           ;
         sonata-simulator-lint = lint.sonata-simulator;
+        bitstream-build = bitstream.build;
+        bitstream-load = bitstream.load;
       };
       checks = {test-simulator = tests.simulator;};
       apps = builtins.listToAttrs (map (program: {

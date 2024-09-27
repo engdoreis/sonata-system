@@ -75,3 +75,27 @@ jobs:
 
     - name: Nix Checks
       run: nix flake check -L
+
+
+  fpga:
+    runs-on: fred-sonata-fpga
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v27
+      with:
+        extra_nix_config: |
+          substituters = https://nix-cache.lowrisc.org/public/ https://cache.nixos.org/
+          trusted-public-keys = nix-cache.lowrisc.org-public-1:O6JLD0yXzaJDPiQW1meVu32JIDViuaPtGDfjlOopU7o= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+
+    - name: Build bitstream
+      run: |
+        module load xilinx/vivado
+        nix run .#bitstream-build
+
+    - name: load bitstream
+      run: |
+        nix run .#bitstream-load
+

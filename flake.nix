@@ -158,8 +158,12 @@
         };
       };
 
+      bitstream = import nix/bitstream.nix {inherit pkgs lrPkgs pythonEnv;};
+
       tests = import nix/tests.nix {
-        inherit pkgs pythonEnv sonata-system-software sonata-simulator;
+        inherit pkgs pythonEnv sonata-system-software sonata-sim-boot-stub cheriot-rtos-test-suite sonata-simulator;
+        bitstream-build = bitstream.build;
+        bitstream-load = bitstream.load;
       };
 
       lint = import nix/lint.nix {
@@ -169,8 +173,6 @@
           sonataSimulatorFileset
           ;
       };
-
-      bitstream = import nix/bitstream.nix {inherit pkgs lrItPkgs pythonEnv;};
     in {
       formatter = pkgs.alejandra;
       devShells.default = pkgs.mkShell {
